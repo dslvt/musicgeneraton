@@ -1,7 +1,8 @@
 #%%
 import pygame 
-from midiutil import MIDIFile
+from midiutil import MIDIFile as mf
 import random as rd
+from roll import MidiFile
 # import pyFluidSynth
 #%%
 def play_music(music_file):
@@ -44,8 +45,8 @@ def playMusicWithStandartSettings(music_file):
         raise SystemExit
 
 #%%
-get_random_midi(10)
-playMusicWithStandartSettings('random.mid')
+# get_random_midi(10)
+playMusicWithStandartSettings('midis/AmazingGrace.mid')
 # degrees  = [60, 62, 64, 65, 67, 69, 71, 72]  # MIDI note number
 # track    = 0
 # channel  = 0
@@ -77,12 +78,24 @@ def get_random_midi(n):
     duration = 1
     tempo = 60 
     volume = 100
-    Midi = MIDIFile(1)
+    Midi = mf(1)
     Midi.addTempo(track, time, tempo)
     for i, pitch in enumerate(degrees):
         Midi.addNote(track, channel, pitch, time+i, duration, volume)
 
     with open("random.mid", "wb") as output_file:
         Midi.writeFile(output_file)
+
+#%%
+mid = MidiFile("midis/mozart.mid")
+
+    # get the list of all events
+    # events = mid.get_events()
+
+    # get the np array of piano roll image
+roll = mid.get_roll()
+
+    # draw piano roll by pyplot
+mid.draw_roll()
 
 #%%
