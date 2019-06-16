@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 from matplotlib.colors import colorConverter
+import pygame
 
 
 # inherit the origin mido class
@@ -14,6 +15,7 @@ class MidiFile(mido.MidiFile):
         self.sr = 10
         self.meta = {}
         self.events = self.get_events()
+        self.music_file = self.filename
 
     def get_events(self):
         mid = self
@@ -247,16 +249,42 @@ class MidiFile(mido.MidiFile):
             if ticks > max_ticks:
                 max_ticks = ticks
         return max_ticks
+    
+    def play_music(self):
+        self.clock = pygame.time.Clock()
+        pygame.mixer.music.load(self.music_file)
+        print("Music file %s loaded!" % self.music_file)
+        
+        pygame.mixer.music.play()
+        while pygame.mixer.music.get_busy():
+            # check if playback has finished
+            self.clock.tick(30)
 
-
-if __name__ == "__main__":
-    mid = MidiFile("test_file/1.mid")
-
-    # get the list of all events
-    # events = mid.get_events()
-
-    # get the np array of piano roll image
-    roll = mid.get_roll()
-
-    # draw piano roll by pyplot
-    mid.draw_roll()
+    def play(self):
+        freq = 44100    # audio CD quality
+        bitsize = -16   # unsigned 16 bit
+        channels = 2    # 1 is mono, 2 is stereo
+        buffer = 1024    # number of samples
+        pygame.mixer.init(freq, bitsize, channels, buffer)
+        # optional volume 0 to 1.0
+        pygame.mixer.music.set_volume(0.8)
+        try:
+            # use the midi file you just saved
+            self.play_music()
+        except (KeyboardInterrupt, SystemExit):
+            # if user hits Ctrl/C then exit
+            # (works only in console mode)
+            pygame.mixer.music.fadeout(1000)
+            pygame.mixer.music.stop()
+            raise SystemExit
+        except:
+            print('what')
+        
+    def simplify(self):
+        pass
+    
+    def get_scale(self):
+        pass
+    
+    def as_array(self):
+        pass

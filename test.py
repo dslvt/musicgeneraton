@@ -3,6 +3,8 @@ import pygame
 from midiutil import MIDIFile as mf
 import random as rd
 from roll import MidiFile
+import numpy as np
+
 # import pyFluidSynth
 #%%
 def play_music(music_file):
@@ -47,23 +49,7 @@ def playMusicWithStandartSettings(music_file):
 #%%
 # get_random_midi(10)
 playMusicWithStandartSettings('midis/AmazingGrace.mid')
-# degrees  = [60, 62, 64, 65, 67, 69, 71, 72]  # MIDI note number
-# track    = 0
-# channel  = 0
-# time     = 0    # In beats
-# duration = 1    # In beats
-# tempo    = 60   # In BPM
-# volume   = 100  # 0-127, as per the MIDI standard
 
-# MyMIDI = MIDIFile(1)  # One track, defaults to format 1 (tempo track is created
-#                       # automatically)
-# MyMIDI.addTempo(track, time, tempo)
-
-# for i, pitch in enumerate(degrees):
-#     MyMIDI.addNote(track, channel, pitch, time + i, duration, volume)
-
-# with open("major-scale.mid", "wb") as output_file:
-#     MyMIDI.writeFile(output_file)
 
 #%%
 def get_random_midi(n):
@@ -76,7 +62,7 @@ def get_random_midi(n):
     channel = 0
     time = 0
     duration = 1
-    tempo = 60 
+    tempo = 100 
     volume = 100
     Midi = mf(1)
     Midi.addTempo(track, time, tempo)
@@ -87,15 +73,52 @@ def get_random_midi(n):
         Midi.writeFile(output_file)
 
 #%%
-mid = MidiFile("midis/mozart.mid")
-
+def drawMidi(music_file):
+    mid = MidiFile("midis/mozard.mid")
     # get the list of all events
     # events = mid.get_events()
-
     # get the np array of piano roll image
-roll = mid.get_roll()
-
+    roll = mid.get_roll()
     # draw piano roll by pyplot
-mid.draw_roll()
+    mid.draw_roll()
+
+
+#%%
+#global variables
+tempo = 100
+gvolume = 1
+music_file = 'midis\\Ocarina of Time.mid'
+voices = 10
+min_note = 1/16
+
+#popul init
+n_popul = 10
+popul = np.array()
+
+
+
+#%%
+playMusicWithStandartSettings(music_file)
+
+#%%
+mid = mf(1)
+for i in range(16):
+    mid.addNote(0, 0, 80, (1/4)*i, 1/4, 100)
+for i in range(4):
+    mid.addNote(0, 0, 72, i, 1, 80)
+with open("check.mid", "wb") as output_file:
+    mid.writeFile(output_file)
+
+#%%
+m = MidiFile('midis\\Ocarina of Time.mid')
+m.play()
+
+#%%
+def stop():
+    zaglushka = MidiFile('check.mid')
+    zaglushka.play()
+
+#%%
+stop()
 
 #%%
