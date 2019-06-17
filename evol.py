@@ -1,12 +1,13 @@
 class Evolutionary():
 
-    def __init__(self):
+    def __init__(self, mfile):
         self.population = []
         self.tempo = 100
         self.gvolume = 1
-        self.music_file = 'midis\\Ocarina of Time.mid'
-        self.voices = 10
-        self.min_note = 1/16
+        self.music_file= mfile 
+        self.voices = 1
+        self.min_note = 8
+
 
     def create_melody(self, ref):
         pass

@@ -13,10 +13,8 @@ from static import scales
 
 
 #%%
-
-
-
-
+mid = MF('midis\\ramen king.mid')
+mid.get_bar(1)
 #%%
 # get_random_midi(10)
 
@@ -245,6 +243,10 @@ print(mid.get_total_ticks(), round((1000000/mid.get_tempo())*mid.length)*deli)
 #%%
 
 mid = MF('midis\\mozart.mid')
+print(mid.as_array())
+
+#%%
+mid = MF('midis\\ramen king.mid')
 print(mid.as_array())
 
 #%%

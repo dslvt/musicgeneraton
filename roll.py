@@ -22,6 +22,16 @@ class MidiFile(mido.MidiFile):
 
 
 
+    def get_num_bars(self):
+        return round(1000000/self.get_tempo()*self.length)
+        
+    def get_bar(self, n):
+        song = self.as_array()
+        in_one_deli = round(self.get_total_ticks()/(round((1000000/self.get_tempo())*self.length)*self.deli))
+        return song[0][int(4*n*self.get_total_ticks()/(self.get_num_bars()*in_one_deli)):
+        int((4*n+4)*self.get_total_ticks()/(self.get_num_bars()*in_one_deli))]
+
+
     def set_filename(self, filename):
         self.music_file = filename
     
