@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 from matplotlib.colors import colorConverter
 import pygame
+from static import scales
 
 
 # inherit the origin mido class
@@ -42,6 +43,27 @@ class MidiFile(mido.MidiFile):
 
     def create_array(self):
         pass
+
+    def available_notes(self):
+        nodes = {}
+        for i, track in enumerate(self.tracks):
+            print("Track {}: {}".format(i, track.name))
+            for msg in track:
+                msg = msg.dict()
+                if not isinstance(msg, mido.MetaMessage):
+                    try:
+                        if nodes.get(msg["note"]) is None:
+                            nodes[msg["note"]] = 1
+                        else:
+                            nodes[msg["note"]] += 1
+                    except KeyError:
+                        pass
+        for key in nodes.keys():
+            nodes[key] //= 2
+
+        keys = list(nodes.keys())
+        keys.sort()
+        return keys        
 
     def get_events(self):
         mid = self
@@ -310,7 +332,26 @@ class MidiFile(mido.MidiFile):
         pass
     
     def get_scale(self):
-        pass
+        keys = self.available_notes()
+        tonic = keys[0]
+        pattern = ''
+        for i in range(12):
+            if (tonic+i) in keys:
+                pattern+='1'
+            else:
+                pattern+='0'
+
+        fscale = []
+        for key, value in scales.items():
+            for i in range(12):
+                if pattern == value:
+                    if key not in fscale:
+                        fscale.append(key)
+                else:
+                    pattern = pattern[1:len(pattern)]+pattern[0]
+        return fscale
+
+
     
     def as_array(self):
         pass
