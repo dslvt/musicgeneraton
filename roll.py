@@ -9,13 +9,39 @@ import pygame
 # inherit the origin mido class
 class MidiFile(mido.MidiFile):
 
-    def __init__(self, filename):
+    def __init__(self, filename=None):
 
         mido.MidiFile.__init__(self, filename)
         self.sr = 10
         self.meta = {}
         self.events = self.get_events()
-        self.music_file = self.filename
+        self.music_file = filename
+
+
+
+
+    def set_filename(self, filename):
+        self.music_file = filename
+    
+    def print_notes(self):
+        for i, track in enumerate(self.tracks):
+            print("Track {}: {}".format(i, track.name))
+            for msg in track:
+                msg = msg.dict()
+                if not isinstance(msg, mido.MetaMessage):
+                    # print(msg.keys())
+                    # print(type(msg.message.pitch))
+                    # for key in msg.dict().keys():
+                    #     print("{}".format(key))
+                    # print("{} {}".format(msg.dict()['note'], msg.dict()['message']))
+                    try:
+                        print("vel: {}, type: {}, time: {}, note: {}".format(msg['velocity'], msg['type'], msg['time'], msg['note']))
+                    except KeyError:
+                        pass
+
+
+    def create_array(self):
+        pass
 
     def get_events(self):
         mid = self
