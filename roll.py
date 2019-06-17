@@ -17,6 +17,7 @@ class MidiFile(mido.MidiFile):
         self.meta = {}
         self.events = self.get_events()
         self.music_file = filename
+        self.deli = 8
 
 
 
@@ -354,4 +355,31 @@ class MidiFile(mido.MidiFile):
 
     
     def as_array(self):
-        pass
+        in_one_deli = round(self.get_total_ticks()/(round((1000000/self.get_tempo())*self.length)*self.deli))
+        nodes = self.available_notes()
+        nodes.sort()
+        ar = np.empty([1, round((1000000/self.get_tempo())*self.length)*self.deli], dtype=int)
+
+
+        for i in range(ar.shape[1]):
+            ar[0][i] = -1
+
+        for inx, channel in enumerate(self.get_events()):
+            timer = 0
+            last_note = -1
+            for msg in channel:
+                if msg.type == 'note_on':
+                    if msg.time != 0:
+                        base = round(timer/in_one_deli)
+                        for i in range(round(msg.time/in_one_deli)):
+                            ar[0][i+base] = 0
+                        timer += msg.time
+                    last_note = nodes.index(msg.note)
+                    
+                elif msg.type == 'note_off':
+                    base = round(timer/in_one_deli)
+                    for i in range(round(msg.time/in_one_deli)):
+                        ar[0][i+base] = len(nodes)+1
+                    ar[0][base] = last_note+1
+                    timer += msg.time
+        return ar

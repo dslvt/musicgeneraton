@@ -1,18 +1,20 @@
 #%%
+
 import pygame 
 from midiutil import MIDIFile as mf
 import random as rd
 from roll import MidiFile as MF
-
 import numpy as np
 import mido
 
 from static import scales
 
-# import pyFluidSynth
+
 
 
 #%%
+
+
 
 
 #%%
@@ -185,16 +187,41 @@ for key, value in scales.items():
 print(fscale)
 
 #%%
-deli = 16
+deli = 8
+# mid = MF('midis\\major-scale.mid')
+mid = MF('a.mid')
 
-mid = MF('midis\\major-scale.mid')
-
+in_one_deli = round(mid.get_total_ticks()/(round((1000000/mid.get_tempo())*mid.length)*deli))
+print(in_one_deli, 'iod')
 length = mid.length
-print(length)
 nodes = mid.available_notes()
-ar = np.empty([1, int(length)*deli], dtype=int)
-for i in range(len(nodes)):
-    pass
+nodes.sort()
+ar = np.empty([1, round((1000000/mid.get_tempo())*mid.length)*deli], dtype=int)
+
+
+for i in range(ar.shape[1]):
+    ar[0][i] = -1
+
+for inx, channel in enumerate(mid.get_events()):
+    timer = 0
+    last_note = -1
+    for msg in channel:
+        if msg.type == 'note_on':
+            print('new note ', msg.time, timer)
+            if msg.time != 0:
+                base = round(timer/in_one_deli)
+                for i in range(round(msg.time/in_one_deli)):
+                    ar[0][i+base] = 0
+                timer += msg.time
+            last_note = nodes.index(msg.note)
+            
+        elif msg.type == 'note_off':
+            base = round(timer/in_one_deli)
+            for i in range(round(msg.time/in_one_deli)):
+                ar[0][i+base] = len(nodes)
+            ar[0][base] = last_note
+            timer += msg.time
+
 print(ar)
 
 #%%
@@ -212,22 +239,12 @@ mid.draw_roll()
             
 #         if msg.type == "note_off":
 
-node_start = -1
-node_end = -1
-next_node_start = -1
-next_node_end = -1
+print(mid.get_total_ticks(), round((1000000/mid.get_tempo())*mid.length)*deli)
 
-for inx, channel in enumerate(mid.get_events()):
-    if len(channel) != 0:
-        for i in range(int(length)*deli):
-            if node_start == -1:
-                ar[i*deli] = 0
-            elif node_start != -1 and node_end <= i:
-                ar[i*deli] = len(nodes)
-            else:
-                node_start = next_node_start
-                node_end = next_node_end:
 
-    
+#%%
+
+mid = MF('midis\\mozart.mid')
+print(mid.as_array())
 
 #%%
