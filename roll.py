@@ -23,14 +23,37 @@ class MidiFile(mido.MidiFile):
 
 
     def get_num_bars(self):
-        return round(1000000/self.get_tempo()*self.length)
+        return round(250000/self.get_tempo()*self.length)
         
     def get_bar(self, n):
         song = self.as_array()
         in_one_deli = round(self.get_total_ticks()/(round((1000000/self.get_tempo())*self.length)*self.deli))
-        return song[0][int(4*n*self.get_total_ticks()/(self.get_num_bars()*in_one_deli)):
-        int((4*n+4)*self.get_total_ticks()/(self.get_num_bars()*in_one_deli))]
+        return song[0][int(n*self.get_total_ticks()/(self.get_num_bars()*in_one_deli)):
+        int((n+1)*self.get_total_ticks()/(self.get_num_bars()*in_one_deli))]
 
+    def bar_similarity(self, n):
+        p = []
+        bar = self.normalize_bar(self.get_bar(n))
+        for i in range(self.get_num_bars()):
+            cof = 0
+            bar1 = self.normalize_bar(self.get_bar(i))
+            for j in range(len(bar1)):
+                if bar[j] == bar1[j]:
+                    cof+=1
+            p.append(cof/len(bar))
+        return p
+
+    def normalize_bar(self, bar):
+        last = -1
+        prod = len(self.available_notes())+1
+        for i in range(len(bar)):
+            if bar[i] == 0:
+                pass
+            elif bar[i] != prod:
+                last = bar[i]
+            else:
+                bar[i] = last
+        return bar
 
     def set_filename(self, filename):
         self.music_file = filename

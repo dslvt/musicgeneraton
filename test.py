@@ -14,10 +14,11 @@ from static import scales
 
 #%%
 mid = MF('midis\\ramen king.mid')
-mid.get_bar(1)
+# print(mid.get_bar(1))
+print(mid.bar_similarity(0))
 #%%
 # get_random_midi(10)
-
+print(mid.get_bar(1))
 
 #%%
 def get_random_midi(n):
