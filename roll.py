@@ -18,6 +18,7 @@ class MidiFile(mido.MidiFile):
         self.events = self.get_events()
         self.music_file = filename
         self.deli = 8
+        self.last_note = len(self.available_notes())+1
 
 
 
@@ -32,20 +33,30 @@ class MidiFile(mido.MidiFile):
         int((n+1)*self.get_total_ticks()/(self.get_num_bars()*in_one_deli))]
 
     def bar_similarity(self, n):
+        #check transp
         p = []
+        transp = []
         bar = self.normalize_bar(self.get_bar(n))
         for i in range(self.get_num_bars()):
-            cof = 0
-            bar1 = self.normalize_bar(self.get_bar(i))
+            cof1, cof2 = 0, 0
+            init_bar = self.get_bar(i)
+            bar1 = self.normalize_bar(init_bar)
+            bar2 = self.transpose_bar(self.normalize_bar(init_bar), bar[0]-init_bar[0])
             for j in range(len(bar1)):
                 if bar[j] == bar1[j]:
-                    cof+=1
-            p.append(cof/len(bar))
-        return p
+                    cof1+=1
+                if bar[j] == bar2[j]:
+                    cof2+=1
+            if cof1>=cof2:
+                transp.append(0)
+            else:
+                transp.append(bar[0]-init_bar[0])
+            p.append(max(cof1/len(bar), cof2/len(bar)))
+        return p, transp
 
     def normalize_bar(self, bar):
         last = -1
-        prod = len(self.available_notes())+1
+        prod = self.last_note
         for i in range(len(bar)):
             if bar[i] == 0:
                 pass
@@ -53,6 +64,12 @@ class MidiFile(mido.MidiFile):
                 last = bar[i]
             else:
                 bar[i] = last
+        return bar
+    
+    def transpose_bar(self, bar, n):
+        for i in range(len(bar)):
+            if not (bar[i]==self.last_note or bar[i]==0):
+                bar[i]+=n
         return bar
 
     def set_filename(self, filename):
@@ -81,7 +98,6 @@ class MidiFile(mido.MidiFile):
     def available_notes(self):
         nodes = {}
         for i, track in enumerate(self.tracks):
-            print("Track {}: {}".format(i, track.name))
             for msg in track:
                 msg = msg.dict()
                 if not isinstance(msg, mido.MetaMessage):
