@@ -13,6 +13,9 @@ class MidiFile(mido.MidiFile):
     def __init__(self, filename=None):
 
         mido.MidiFile.__init__(self, filename)
+        self.refresh()    
+        
+    def refresh(self, filename=None):
         self.sr = 10
         self.meta = {}
         self.events = self.get_events()
@@ -22,13 +25,15 @@ class MidiFile(mido.MidiFile):
 
 
 
-
     def get_num_bars(self):
         return round(250000/self.get_tempo()*self.length)
+
+    def get_in_one_deli(self):
+        return round(self.get_total_ticks()/(round((1000000/self.get_tempo())*self.length)*self.deli))
         
     def get_bar(self, n):
         song = self.as_array()
-        in_one_deli = round(self.get_total_ticks()/(round((1000000/self.get_tempo())*self.length)*self.deli))
+        in_one_deli = self.get_in_one_deli()
         return song[0][int(n*self.get_total_ticks()/(self.get_num_bars()*in_one_deli)):
         int((n+1)*self.get_total_ticks()/(self.get_num_bars()*in_one_deli))]
 
@@ -54,6 +59,10 @@ class MidiFile(mido.MidiFile):
             p.append(max(cof1/len(bar), cof2/len(bar)))
         return p, transp
 
+
+    def get_bar_ticks(self):
+        return self.get_total_ticks()/self.get_num_bars()
+
     def normalize_bar(self, bar):
         last = -1
         prod = self.last_note
@@ -77,7 +86,7 @@ class MidiFile(mido.MidiFile):
     
     def print_notes(self):
         for i, track in enumerate(self.tracks):
-            print("Track {}: {}".format(i, track.name))
+            # print("Track {}: {}".format(i, track.name))
             for msg in track:
                 msg = msg.dict()
                 if not isinstance(msg, mido.MetaMessage):
@@ -117,7 +126,7 @@ class MidiFile(mido.MidiFile):
 
     def get_events(self):
         mid = self
-        print(mid)
+        # print(mid)
 
         # There is > 16 channel in midi.tracks. However there is only 16 channel related to "music" events.
         # We store music events of 16 channel in the list "events" with form [[ch1],[ch2]....[ch16]]
@@ -284,14 +293,14 @@ class MidiFile(mido.MidiFile):
         # change unit of time axis from tick to second
         tick = self.get_total_ticks()
         second = mido.tick2second(tick, self.ticks_per_beat, self.get_tempo())
-        print(second)
+        # print(second)
         if second > 10:
             x_label_period_sec = second // 10
         else:
             x_label_period_sec = second / 10  # ms
-        print(x_label_period_sec)
+        # print(x_label_period_sec)
         x_label_interval = mido.second2tick(x_label_period_sec, self.ticks_per_beat, self.get_tempo()) / self.sr
-        print(x_label_interval)
+        # print(x_label_interval)
         plt.xticks([int(x * x_label_interval) for x in range(20)], [round(x * x_label_period_sec, 2) for x in range(20)])
 
         # change scale and label of y axis
@@ -404,7 +413,7 @@ class MidiFile(mido.MidiFile):
 
     
     def as_array(self):
-        in_one_deli = round(self.get_total_ticks()/(round((1000000/self.get_tempo())*self.length)*self.deli))
+        in_one_deli = self.get_in_one_deli() 
         nodes = self.available_notes()
         nodes.sort()
         ar = np.empty([1, round((1000000/self.get_tempo())*self.length)*self.deli], dtype=int)

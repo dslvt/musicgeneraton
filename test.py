@@ -4,20 +4,97 @@ import pygame
 from midiutil import MIDIFile as mf
 import random as rd
 from roll import MidiFile as MF
+from mido import Message, MidiTrack
 import numpy as np
 import mido
-
+from random import randint
 from static import scales
 
+#%%
 
+mid = MF()
+track = MidiTrack()
+mid.tracks.append(track)
+
+track.append(Message('program_change', program=12, time=0))
+track.append(Message('note_on', note=64, velocity=64, time=32))
+track.append(Message('note_off', note=64, velocity=127, time=0))
+
+mid.refresh(None)
+print(mid.get_total_ticks())
+
+# mid = MF('ab.mid')
+# print(mid.get_total_ticks())
+
+# mid.play_music()
+#%%
+ar = [25, 27, 27, 27, 23, 27, 24, 27, 18, 27, 27, 27, 23, 27, 24, 27, 16, 27, 17, 27, 25, 27,
+ 27, 27, 18, 27, 27, 27, 21, 27, 22, 27]
+avail = [59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84]
+velo = [100 for i in range(len(ar))]
+mid = MF()
+track = MidiTrack()
+mid.tracks.append(track)
+note_len = 0
+note = 0
+has_pause = False
+pr = len(avail)+1
+for i in range(len(ar)):
+    if pr != ar[i] and ar[i] != 0:
+        if has_pause:
+            time = note_len
+        else:
+            track.append(Message('note_off', note=avail))
+        track.append(Message)
+        track.append(Message('note_on', note=avail[ar[i], time=time]))
 
 
 #%%
-mid = MF('midis\\ramen king.mid')
-print(mid.get_bar(1))
-print(mid.bar_similarity(0))
+mid = MF("midis\\ramen king.mid")
+print(mid.get_in_one_deli()*mid.deli*mid.get_num_bars()*4, mid.get_total_ticks())
+print(mid.get_bar(0))
+mid.available_notes()
+
 #%%
-mid.draw_roll()
+def read_from_array(ar, available_notes):
+
+
+#%%
+popul_size = 10
+
+#predeiined rhythm
+
+for i in range(1):
+# for i in range(len(mid.get_num_bars())):
+    num_epoch = 10
+    #create st populaiton
+    population = [np.empty(mid.get_bar_ticks()) for i in range(popul_size)]
+    for j in range(len(population)):
+        for k in range(len(population[j])):
+            if population[j][k] != mid.last_note or population[j][k] != 0:
+                population[j][k] = randint(1, mid.last_note-1)
+    print(population)
+    for j in range(num_epoch):
+        
+        pass
+    #save best bar
+    pass
+#save song
+
+
+#functions
+
+#create bar
+     #evaluate fitness function
+        #roulette selection
+        #crossover and mutation
+
+
+#roulette selection
+
+#fitness function
+
+#crossover and mutation
 #%%
 def get_random_midi(n):
     degrees = [] 
