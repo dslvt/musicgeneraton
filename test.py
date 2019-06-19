@@ -10,6 +10,70 @@ import mido
 from random import randint
 from static import scales
 
+
+#%%
+popul_size = 2
+result = []
+#predeiined rhythm
+mid = MF('midis\\garbadje.mid')
+print(mid.get_bar(0))
+print(mid.last_note)
+
+def fitness_func(ar):
+    return 1
+
+def mutate_bar(ar):
+    pass
+
+for i in range(1):
+# for i in range(len(mid.get_num_bars())):
+    num_epoch = 1
+    #create st populaiton
+    ref_bar = mid.get_bar(i)
+    bar_size = len(ref_bar)
+    population = [np.zeros(bar_size, dtype=int) for i in range(popul_size)]
+    for j in range(len(population)):
+        for k in range(len(population[j])):
+            if ref_bar[k] != mid.last_note and ref_bar[k] != 0:
+                population[j][k] = randint(1, mid.last_note-1)
+            else:
+                population[j][k] = ref_bar[k]
+    for j in range(num_epoch):
+        a = [(k, fitness_func(population[k])) for k in range(len(population))]
+        sorted(a, key=lambda score: a[1])
+        new_popul = []
+        for i in range(num_epoch//2):
+            new_popul.append(population[a[0]])
+        for i in range(num_epoch//2):
+            new_popul.append(new_popul[randint(0, num_epoch//2-1)])
+        
+        #crossover and mutation
+    #save best bar
+    a = [(k, fitness_func(population[k])) for k in range(len(population))]
+    sorted(a, key=lambda score: a[1])
+    result.append(population[a[0][0]])
+
+print(result)
+#save song
+# mid = MF()
+# mid.read_from_array(result)
+# mid.save("generated.mid")
+
+
+#functions
+
+#create bar
+     #evaluate fitness function
+        #roulette selection
+        #crossover and mutation
+
+
+#roulette selection
+# def selection(ar):
+#     for
+
+#fitness function
+
 #%%
 
 mid = MF()
@@ -59,40 +123,7 @@ mid.available_notes()
 def read_from_array(ar, available_notes):
 
 
-#%%
-popul_size = 10
 
-#predeiined rhythm
-
-for i in range(1):
-# for i in range(len(mid.get_num_bars())):
-    num_epoch = 10
-    #create st populaiton
-    population = [np.empty(mid.get_bar_ticks()) for i in range(popul_size)]
-    for j in range(len(population)):
-        for k in range(len(population[j])):
-            if population[j][k] != mid.last_note or population[j][k] != 0:
-                population[j][k] = randint(1, mid.last_note-1)
-    print(population)
-    for j in range(num_epoch):
-        
-        pass
-    #save best bar
-    pass
-#save song
-
-
-#functions
-
-#create bar
-     #evaluate fitness function
-        #roulette selection
-        #crossover and mutation
-
-
-#roulette selection
-
-#fitness function
 
 #crossover and mutation
 #%%

@@ -441,3 +441,6 @@ class MidiFile(mido.MidiFile):
                     ar[0][base] = last_note+1
                     timer += msg.time
         return ar
+
+    def read_from_array(self):
+        pass
