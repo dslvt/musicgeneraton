@@ -5,6 +5,7 @@ from midiutil import MIDIFile as mf
 import random as rd
 from roll import MidiFile as MF
 from mido import Message, MidiTrack
+
 import numpy as np
 import mido
 from random import randint
@@ -12,22 +13,102 @@ from static import scales
 
 
 #%%
+mid = MF('midis\\garbadje.mid')
+print(mid.available_notes(), mid.last_note)
+#%%
+interval_size = {5: 1, 7: 1, 0: 1, 12: 0, 3: 2, 4: 2, 8: 2, 9: 2, 1: 3, 2: 3, 6: 4, 10: 3, 11: 3}
+
 popul_size = 2
 result = []
 #predeiined rhythm
 mid = MF('midis\\garbadje.mid')
-print(mid.get_bar(0))
-print(mid.last_note)
 
-def fitness_func(ar):
-    return 1
+print(mid.get_bar(0))
+print(mid.last_note, 'last')
+
+def get_num_noted(ar):
+    notes = []
+    for i in range(len(ar)):
+        if ar[i] != mid.last_note and ar[i] != 0:
+            notes.append(ar[i])
+    return notes
+
+
+def fitness_func(bar_inx, bar):
+    funcs = [interval_fitness_func]
+    argums = [1]
+    total_score = 0
+    for itr, func in enumerate(funcs):
+        total_score += argums[itr]*func(bar_inx, bar)
+    return total_score
+
+def mean_of_bar(ar):
+    notes = get_num_noted(ar)
+    total = 0
+    for i in range(1, len(notes)):
+        dif = abs(notes[i] - notes[i-1])
+        if dif > 12:
+            total += 5
+        else:
+            total += interval_size[dif]
+    return total/len(notes)
+
+def var_of_bar(ar):
+    notes = get_num_noted(ar)
+    total = 0
+    mean = mean_of_bar(ar)
+    for i in range(1, len(notes)):
+        total += (notes[i] - mean)**2
+    return total/len(notes)
+
+def interval_fitness_func(inx, bar):
+    a, b = 1, 1
+    mean, variance = 0, 0
+    bar_mean = mean_of_bar(bar)
+    bar_var = var_of_bar(bar) 
+
+    for i in range(inx, mid.get_num_bars()):
+        mean+=(1/(i+1))*(bar_mean-mean_of_bar(mid.get_bar(i)))
+        variance += (1/(i+1))*(bar_var-var_of_bar(mid.get_bar(i)))
+
+    return a*mean + b*variance
 
 def mutate_bar(ar):
-    pass
+    if rd.random() > 0.5:
+        # print(ar, 'before')
+        notes = get_num_noted(ar)
+        # print(notes, 'notes')
+        avail = mid.available_notes()
+        base = avail[0]
+        #normalazing avail notes
+        for i in range(len(avail)):
+            avail[i] -= base - 1
+        # print(avail)
 
-for i in range(1):
-# for i in range(len(mid.get_num_bars())):
-    num_epoch = 1
+        for i in range(len(notes)):
+            if rd.random() < 0.1:
+                #change for one random note
+                notes[i] = randint(1, len(avail)-1)
+            if rd.random() < 0.1:
+                #swap with next
+                if i != len(notes)-1:
+                    notes[i], notes[i+1] = notes[i+1], notes[i]
+        cur_note = 0
+        for i in range(len(ar)):
+            if ar[i] != mid.last_note and ar[i] != 0:
+                ar[i] = notes[cur_note]
+                cur_note+=1
+        # print(ar, notes, 'after')
+    return ar
+
+def has_no_artefacts(ar):
+    for i in range(len(ar)):
+        assert(ar[i] <= mid.last_note)
+
+# for i in range(1):
+for i in range(mid.get_num_bars()):
+    print("{} {}".format(i, 'bar'))
+    num_epoch = 10
     #create st populaiton
     ref_bar = mid.get_bar(i)
     bar_size = len(ref_bar)
@@ -39,25 +120,35 @@ for i in range(1):
             else:
                 population[j][k] = ref_bar[k]
     for j in range(num_epoch):
-        a = [(k, fitness_func(population[k])) for k in range(len(population))]
+        a = [(k, fitness_func(i, population[k])) for k in range(len(population))]
         sorted(a, key=lambda score: a[1])
         new_popul = []
-        for i in range(num_epoch//2):
-            new_popul.append(population[a[0]])
-        for i in range(num_epoch//2):
-            new_popul.append(new_popul[randint(0, num_epoch//2-1)])
+        for k in range(len(a)//2):
+            new_popul.append(population[a[k][0]])
+        for k in range(len(a)//2):
+            new_popul.append(new_popul[randint(0, len(a)//2-1)])
         
+        for k in range(len(new_popul)):
+            new_popul[k] = mutate_bar(new_popul[k])
+            has_no_artefacts(new_popul[k])
+
+        population = new_popul
         #crossover and mutation
     #save best bar
-    a = [(k, fitness_func(population[k])) for k in range(len(population))]
+    a = [(k, fitness_func(i, population[k])) for k in range(len(population))]
     sorted(a, key=lambda score: a[1])
-    result.append(population[a[0][0]])
+    # result.append(population[a[0][0]])
+    assert(len(population[a[0][0]]) == len(ref_bar))
+    print(population[a[0][0]], 'popul')
+    for i in range(len(population[a[0][0]])):
+        result.append(population[a[0][0]][i])
 
 print(result)
+
 #save song
-# mid = MF()
-# mid.read_from_array(result)
-# mid.save("generated.mid")
+gmid = MF()
+gmid.read_from_array(avail=mid.available_notes(), ar=result)
+gmid.save("generated.mid")
 
 
 #functions
@@ -92,26 +183,35 @@ print(mid.get_total_ticks())
 
 # mid.play_music()
 #%%
-ar = [25, 27, 27, 27, 23, 27, 24, 27, 18, 27, 27, 27, 23, 27, 24, 27, 16, 27, 17, 27, 25, 27,
- 27, 27, 18, 27, 27, 27, 21, 27, 22, 27]
-avail = [59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84]
+ar = [6, 7, 7, 7, 7, 7, 7, 7, 4, 7, 7, 7, 7, 7, 7, 7, 1, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7]
+avail = [72, 75, 77, 78, 79, 82]
+
 velo = [100 for i in range(len(ar))]
 mid = MF()
-track = MidiTrack()
-mid.tracks.append(track)
-note_len = 0
-note = 0
-has_pause = False
-pr = len(avail)+1
-for i in range(len(ar)):
-    if pr != ar[i] and ar[i] != 0:
-        if has_pause:
-            time = note_len
-        else:
-            track.append(Message('note_off', note=avail))
-        track.append(Message)
-        track.append(Message('note_on', note=avail[ar[i], time=time]))
-
+# track = MidiTrack()
+# mid.tracks.append(track)
+# timestamp = 12
+# has_pause = False
+# last_note = -1
+# time = 0
+# pause_time=0
+# for i in range(len(ar)):
+#     if ar[i] != len(avail) + 1 and ar[i] != 0:
+#         if last_note != -1:
+#             track.append(Message('note_off', note=last_note, velocity=100, time=time))
+#         last_note = avail[ar[i]-1]
+#         track.append(Message('note_on', note=last_note, velocity=100, time=pause_time))
+#         pause_time=0
+#         time=timestamp
+#     elif ar[i] == 0:
+#         pause_time += timestamp
+#     elif ar[i] == len(avail) + 1:
+#         time += timestamp
+# if pause_time==0:
+#     track.append(Message('note_off', note=last_note, velocity=100, time=time))
+# mid.refresh()
+mid.read_from_array(ar, avail)
+mid.draw_roll()
 
 #%%
 mid = MF("midis\\ramen king.mid")

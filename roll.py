@@ -5,6 +5,8 @@ import matplotlib as mpl
 from matplotlib.colors import colorConverter
 import pygame
 from static import scales
+from mido import Message, MidiTrack
+
 
 
 # inherit the origin mido class
@@ -442,5 +444,28 @@ class MidiFile(mido.MidiFile):
                     timer += msg.time
         return ar
 
-    def read_from_array(self):
-        pass
+    def read_from_array(self, ar, avail):
+        track = MidiTrack()
+        self.tracks.append(track)
+        timestamp = 12
+        last_note = -1
+        time = 0
+        pause_time=0
+        for i in range(len(ar)):
+            # print(type(ar[i]), 'type ar[i]')
+            # assert(isinstance(ar[i], int))
+            if ar[i] != len(avail) + 1 and ar[i] != 0:
+                if last_note != -1:
+                    track.append(Message('note_off', note=last_note, velocity=100, time=time))
+                # print(ar[i]-1, i, avail)
+                last_note = avail[ar[i]-1]
+                track.append(Message('note_on', note=last_note, velocity=100, time=pause_time))
+                pause_time=0
+                time=timestamp
+            elif ar[i] == 0:
+                pause_time += timestamp
+            elif ar[i] == len(avail) + 1:
+                time += timestamp
+        if pause_time==0:
+            track.append(Message('note_off', note=last_note, velocity=100, time=time))
+        self.refresh()
