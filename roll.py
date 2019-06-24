@@ -36,7 +36,7 @@ class MidiFile(mido.MidiFile):
     def get_bar(self, n):
         song = self.as_array()
         in_one_deli = self.get_in_one_deli()
-        return song[0][int(n*self.get_total_ticks()/(self.get_num_bars()*in_one_deli)):
+        return song[int(n*self.get_total_ticks()/(self.get_num_bars()*in_one_deli)):
         int((n+1)*self.get_total_ticks()/(self.get_num_bars()*in_one_deli))]
 
     def bar_similarity(self, n):
@@ -113,10 +113,11 @@ class MidiFile(mido.MidiFile):
                 msg = msg.dict()
                 if not isinstance(msg, mido.MetaMessage):
                     try:
-                        if nodes.get(msg["note"]) is None:
-                            nodes[msg["note"]] = 1
-                        else:
-                            nodes[msg["note"]] += 1
+                        if msg['note'] != 0:
+                            if nodes.get(msg["note"]) is None:
+                                nodes[msg["note"]] = 1
+                            else:
+                                nodes[msg["note"]] += 1
                     except KeyError:
                         pass
         for key in nodes.keys():
@@ -393,23 +394,33 @@ class MidiFile(mido.MidiFile):
         pass
     
     def get_scale(self):
-        keys = self.available_notes()
-        tonic = keys[0]
-        pattern = ''
-        for i in range(12):
-            if (tonic+i) in keys:
-                pattern+='1'
-            else:
-                pattern+='0'
+        c4 = 60
+        notes = ['c', 'd-', 'd', 'e-', 'e', 'f', 'g-','g', 'a-', 'a', 'b-', 'b']
 
-        fscale = []
-        for key, value in scales.items():
-            for i in range(12):
-                if pattern == value:
-                    if key not in fscale:
-                        fscale.append(key)
+        fscale = 'not defined'
+        keys = self.as_array()
+        pattern = ['0' for i in range(12)]
+        tonic = 0
+        for i in range(len(keys)):
+            if keys[i] != 0 and keys[i] != self.last_note:
+                tonic = keys[i]-1
+                print(tonic)
+                fscale = notes[abs(120*tonic-c4)%12]
+                break
+
+        for i in range(len(keys)):
+            if keys[i] != 0 and keys[i] != self.last_note:
+                if keys[i] < tonic:
+                    pattern[12 - (tonic-keys[i]+1)%12] = '1'
                 else:
-                    pattern = pattern[1:len(pattern)]+pattern[0]
+                    pattern[(keys[i]-tonic-1)%12] = '1'
+        print(pattern)
+        pattern = ''.join(pattern)
+        for scale in scales.keys():
+            if pattern == scale:
+                fscale += ''.join([' ', scales[scale]])
+
+
         return fscale
 
 
@@ -418,7 +429,7 @@ class MidiFile(mido.MidiFile):
         in_one_deli = self.get_in_one_deli() 
         nodes = self.available_notes()
         nodes.sort()
-        ar = np.empty([1, round((1000000/self.get_tempo())*self.length)*self.deli], dtype=int)
+        ar = np.empty([1, round((1000000/self.get_tempo())*self.length)*in_one_deli], dtype=int)
 
 
         for i in range(ar.shape[1]):
@@ -442,12 +453,18 @@ class MidiFile(mido.MidiFile):
                         ar[0][i+base] = len(nodes)+1
                     ar[0][base] = last_note+1
                     timer += msg.time
+        stop_deli = ar.shape[1]
+        for i in range(stop_deli):
+            if ar[0][i] == -1:
+                stop_deli = i
+                break
+        ar = ar[0][:stop_deli]
         return ar
 
     def read_from_array(self, ar, avail):
         track = MidiTrack()
         self.tracks.append(track)
-        timestamp = 12
+        timestamp = 20
         last_note = -1
         time = 0
         pause_time=0

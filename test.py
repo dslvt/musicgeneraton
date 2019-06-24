@@ -5,11 +5,16 @@ from midiutil import MIDIFile as mf
 import random as rd
 from roll import MidiFile as MF
 from mido import Message, MidiTrack
-
 import numpy as np
 import mido
 from random import randint
-from static import scales
+from static import scales, input_files
+
+#%%
+#checking opereleniye scale system
+mid = MF('in/Star Trek TNG kurz.mid')
+print(mid.get_scale())
+
 
 
 #%%
@@ -18,7 +23,7 @@ print(mid.available_notes(), mid.last_note)
 #%%
 interval_size = {5: 1, 7: 1, 0: 1, 12: 0, 3: 2, 4: 2, 8: 2, 9: 2, 1: 3, 2: 3, 6: 4, 10: 3, 11: 3}
 
-popul_size = 2
+popul_size = 10
 result = []
 #predeiined rhythm
 mid = MF('midis\\garbadje.mid')
@@ -68,8 +73,9 @@ def interval_fitness_func(inx, bar):
     bar_var = var_of_bar(bar) 
 
     for i in range(inx, mid.get_num_bars()):
-        mean+=(1/(i+1))*(bar_mean-mean_of_bar(mid.get_bar(i)))
-        variance += (1/(i+1))*(bar_var-var_of_bar(mid.get_bar(i)))
+        mean+=(1/(i+1))*(abs(bar_mean-mean_of_bar(mid.get_bar(i))))
+
+        variance += (1/(i+1))*(abs(bar_var-var_of_bar(mid.get_bar(i))))
 
     return a*mean + b*variance
 
@@ -105,23 +111,28 @@ def has_no_artefacts(ar):
     for i in range(len(ar)):
         assert(ar[i] <= mid.last_note)
 
-# for i in range(1):
-for i in range(mid.get_num_bars()):
+for i in range(1):
+# for i in range(mid.get_num_bars()):
     print("{} {}".format(i, 'bar'))
-    num_epoch = 10
+    num_epoch = 100
     #create st populaiton
     ref_bar = mid.get_bar(i)
     bar_size = len(ref_bar)
-    population = [np.zeros(bar_size, dtype=int) for i in range(popul_size)]
+    population = [ref_bar for i in range(popul_size)]
     for j in range(len(population)):
         for k in range(len(population[j])):
             if ref_bar[k] != mid.last_note and ref_bar[k] != 0:
                 population[j][k] = randint(1, mid.last_note-1)
             else:
                 population[j][k] = ref_bar[k]
+
+
     for j in range(num_epoch):
+       
         a = [(k, fitness_func(i, population[k])) for k in range(len(population))]
-        sorted(a, key=lambda score: a[1])
+        a = sorted(a, key=lambda score: score[1])
+        print(a)
+        # print("{}: {}, {}: ".format('epoch', j, 'score', a[0][0]))
         new_popul = []
         for k in range(len(a)//2):
             new_popul.append(population[a[k][0]])
@@ -139,7 +150,7 @@ for i in range(mid.get_num_bars()):
     sorted(a, key=lambda score: a[1])
     # result.append(population[a[0][0]])
     assert(len(population[a[0][0]]) == len(ref_bar))
-    print(population[a[0][0]], 'popul')
+    # print(population[a[0][0]], 'popul')
     for i in range(len(population[a[0][0]])):
         result.append(population[a[0][0]][i])
 

@@ -148,3 +148,52 @@ scales = {'Adonai Malakh':                      '111101010110',
           'Wholetone Scale With Leading Tone':  '101010101011',
           'Youlan Scale':                       '111011110110',
           'Zirafkend':                          '101101011010'}
+
+
+input_files = {
+    "in/Star Trek TNG kurz.mid": "F minor", "in/sleepsat.mid": "E- major", "in/silentnight.mid": "C major",
+    "in/shephard.mid": "F major", "in/sesame.mid": "C minor",
+    "in/scooby.mid": "C major", "in/Sara.mid": "C major", "in/santacom.mid": "C major", "in/rudolph.mid": "C major",
+    "in/Rikasmies.mid": "C minor",
+    "in/reichwaehr.mid": "C minor", "in/prima.mid": "C major", "in/policeacademy.mid": "C major",
+    "in/pipi-langstrumpf.mid": "C major", "in/Petteri.mid": "C major",
+    "in/superman.mid": "G major", "in/StheB.mid": "G major", "in/Sternenhimmel.mid": "G major",
+    "in/starwars-imperial.mid": "D minor", "in/starwars.mid": "C minor",
+    "in/99 Luftballons.mid": "D minor", "in/90210.mid": "F major", "in/Zorbas.mid": "D major",
+    "in/ZieGindsKomtDeStoomboot.mid": "F major",
+    "in/you R not alone.mid": "D minor",
+    "in/X Files.mid": "E minor", "in/winnerabba.mid": "B major", "in/WalkOfLife.mid": "A major",
+    "in/Uralinpihlaja.mid": "D minor", "in/tlc.mid": "C major",
+    "in/Titanic.mid": "C major", "in/tannebaum.mid": "F major",
+
+    "in/oxygen.mid": "C minor", "in/ohcome.mid": "D minor", "in/Oh_come.mid": "G major",
+    "in/offspring_getajob.mid": "A minor", "in/o_little.mid": "F major",
+    "in/o_la_paloma.mid": "G major", "in/nur getrumt.mid": "C major",
+    "in/Niemals in New York 2.mid": "C major", "in/nie wieder.mid": "C major", "in/murka.mid": "D minor",
+    "in/Mit 66 Jahren.mid": "F major", "in/Mission_impossible.mid": "E- major",
+    "in/mief.mid": "C major", "in/marmor-stein.mid": "C major",
+    "in/major tom.mid": "F major", "in/Macarena.mid": "F major",
+    "in/LivingRoom.mid": "D minor", "in/liquido.mid": "A minor",
+
+    "in/Lindenstrae2.mid": "C major", "in/kiss.mid": "A minor", "in/Insel m. 2 Bergen.mid": "C major",
+    "in/indiana.mid": "C major", "in/howmuchisthefish.mid": "A minor", "in/HoheBerge.mid": "D major",
+    "in/GWein.mid": "A minor",
+
+    "in/GuteZeiten.mid": "A minor", "in/Griechischer Wein2.mid": "A minor",
+    "in/goodbad.mid": "A minor", "in/good.mid": "F major", "in/godfather.mid": "C minor",
+    "in/god_rest.mid": "D minor", "in/gl_ck.mid": "C major", "in/FofS.mid": "G major",
+
+    "in/flintstones.mid": "A minor", "in/flieger.mid": "C major",
+    "in/Eldanka.mid": "D minor", "in/Elamaa_juoksuhaudoissa.mid": "G minor",
+    "in/einfallfuer2.mid": "A minor", "in/Ein_Fall_Fuer_Zwei.mid": "A minor",
+    "in/east_end.mid": "B- major", "in/DschingesKhan.mid": "A minor",
+    "in/deutschlandlied.mid": "G major", "in/denneboom.mid": "F major",
+    # "in/davy.mid": "C major",
+    "in/Cucaracha.mid": "C major",
+    "in/cccp.mid": "A major", "in/boom.mid": "F major", "in/Bittersweetharmonie.mid": "A- major",
+    "in/big big girl.mid": "C major", "in/Biene Maja.mid": "C major",
+    "in/away.mid": "F major", "in/advkal8.mid": "C major", "in/advkal10.mid": "C major",
+    "in/advkal12.mid": "A minor", "in/advkal15.mid": "C major",
+    "in/advkal17.mid": "C major"
+
+}
