@@ -24,6 +24,15 @@ class MidiFile(mido.MidiFile):
         self.music_file = filename
         self.deli = 8
         self.last_note = len(self.available_notes())+1
+        self.meta = {'time_signature': {'type': 'time_signature',
+            'numerator': 4,
+            'denominator': 4,
+            'clocks_per_click': 24,
+            'notated_32nd_notes_per_beat': 8,
+            'time': 0},
+            'end_of_track': {'type': 'end_of_track', 'time': 0},
+            'set_tempo': {'type': 'set_tempo', 'tempo': 428571, 'time': 0},
+            'track_name': {'type': 'track_name', 'name': 'FL Keys', 'time': 0}}
 
 
 
@@ -464,10 +473,14 @@ class MidiFile(mido.MidiFile):
     def read_from_array(self, ar, avail):
         track = MidiTrack()
         self.tracks.append(track)
-        timestamp = 20
+        timestamp = 60
         last_note = -1
         time = 0
         pause_time=0
+        control = [10, 7, 101, 100, 6, 10, 7, 101, 100, 6, 10, 7]
+        value = [64, 100, 0, 0, 12, 64, 100, 0, 0, 12, 64, 100]
+        for i in range(len(control)):
+            track.append(Message('control_change', channel = 0, control=control[i], value=value[i], time=0))
         for i in range(len(ar)):
             # print(type(ar[i]), 'type ar[i]')
             # assert(isinstance(ar[i], int))
@@ -485,4 +498,11 @@ class MidiFile(mido.MidiFile):
                 time += timestamp
         if pause_time==0:
             track.append(Message('note_off', note=last_note, velocity=100, time=time))
+        control=[101, 100, 6, 10, 7, 101, 100, 6, 10, 7, 101, 100, 6, 10, 7]
+        value = [0, 0, 12, 64, 100, 0, 0, 12, 64, 100, 0, 0, 12, 64, 100]
+        time = [192, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        for i in range(len(control)):
+            track.append(Message('control_change', channel = 0, control=control[i], value=value[i], time=time[i]))
+        
+        
         self.refresh()

@@ -6,6 +6,7 @@ import random as rd
 from roll import MidiFile as MF
 from mido import Message, MidiTrack
 import numpy as np
+
 import mido
 from random import randint
 from static import scales, input_files
@@ -111,10 +112,10 @@ def has_no_artefacts(ar):
     for i in range(len(ar)):
         assert(ar[i] <= mid.last_note)
 
-for i in range(1):
-# for i in range(mid.get_num_bars()):
+# for i in range(1):
+for i in range(mid.get_num_bars()):
     print("{} {}".format(i, 'bar'))
-    num_epoch = 100
+    num_epoch = 10
     #create st populaiton
     ref_bar = mid.get_bar(i)
     bar_size = len(ref_bar)
@@ -131,7 +132,6 @@ for i in range(1):
        
         a = [(k, fitness_func(i, population[k])) for k in range(len(population))]
         a = sorted(a, key=lambda score: score[1])
-        print(a)
         # print("{}: {}, {}: ".format('epoch', j, 'score', a[0][0]))
         new_popul = []
         for k in range(len(a)//2):
@@ -461,10 +461,45 @@ print(mid.get_total_ticks(), round((1000000/mid.get_tempo())*mid.length)*deli)
 #%%
 
 mid = MF('midis\\mozart.mid')
-print(mid.as_array())
+genmid = MF()
+genmid.read_from_array(mid.as_array(), mid.available_notes())
+genmid.refresh()
+# assert(len(genmid.as_array()) == len(mid.as_array()))
+print(len(genmid.as_array()), len(mid.as_array()))
+print(genmid.get_total_ticks(), mid.get_total_ticks())
+# genmid.draw_roll()
+# mid.draw_roll()
+genmid.save('gen.mid')
+
 
 #%%
-mid = MF('midis\\ramen king.mid')
-print(mid.as_array())
+
+len(mid.as_array())
+#%%
+mid.events
+
+#%%
+mid.events
+
+#%%
+genmid.events
+
+#%%
+genmid.as_array()
+
+#%%
+mid.as_array()[:40]
+
+#%%
+genmid.get_total_ticks()/(1000000/genmid.get_tempo())
+
+#%%
+mid.length/genmid.length
+
+#%%
+genmid.get_tempo()
+
+#%%
+genmid.play()
 
 #%%
