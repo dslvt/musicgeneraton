@@ -24,6 +24,7 @@ print(mid.available_notes(), mid.last_note)
 #%%
 interval_size = {5: 1, 7: 1, 0: 1, 12: 0, 3: 2, 4: 2, 8: 2, 9: 2, 1: 3, 2: 3, 6: 4, 10: 3, 11: 3}
 
+
 popul_size = 10
 result = []
 #predeiined rhythm
