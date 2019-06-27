@@ -197,3 +197,7 @@ input_files = {
     "in/advkal17.mid": "C major"
 
 }
+
+
+midis = ["slow dancing.mid", "random.mid", "ramen king.mid", "Ocarina of Time.mid", "new_song.mid", "mozart.mid", "major-scale.mid", 
+        "giselle.mid", "garbadje.mid", "check.mid", "amazing grace.mid"]

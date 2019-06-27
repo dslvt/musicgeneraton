@@ -16,7 +16,8 @@ class MidiFile(mido.MidiFile):
 
         mido.MidiFile.__init__(self, filename)
         self.refresh()    
-        
+    
+    #if you want update something in track, midi messages, you need use refresh
     def refresh(self, filename=None):
         self.sr = 10
         self.meta = {}
@@ -35,19 +36,23 @@ class MidiFile(mido.MidiFile):
             'track_name': {'type': 'track_name', 'name': 'FL Keys', 'time': 0}}
 
 
-
+    
     def get_num_bars(self):
         return round(250000/self.get_tempo()*self.length)
 
+
+    #return how many ticks in one smallest posible note
     def get_in_one_deli(self):
         return round(self.get_total_ticks()/(round((1000000/self.get_tempo())*self.length)*self.deli))
         
+    #return bar in array
     def get_bar(self, n):
         song = self.as_array()
         in_one_deli = self.get_in_one_deli()
         return song[int(n*self.get_total_ticks()/(self.get_num_bars()*in_one_deli)):
         int((n+1)*self.get_total_ticks()/(self.get_num_bars()*in_one_deli))]
 
+    #return array with similarity from 0.0 to 1.0 for all bars and interval to change bar
     def bar_similarity(self, n):
         #check transp
         p = []
@@ -74,6 +79,7 @@ class MidiFile(mido.MidiFile):
     def get_bar_ticks(self):
         return self.get_total_ticks()/self.get_num_bars()
 
+    #delete all continues of note and fill it with number of note
     def normalize_bar(self, bar):
         last = -1
         prod = self.last_note
@@ -86,15 +92,18 @@ class MidiFile(mido.MidiFile):
                 bar[i] = last
         return bar
     
+
     def transpose_bar(self, bar, n):
         for i in range(len(bar)):
             if not (bar[i]==self.last_note or bar[i]==0):
                 bar[i]+=n
         return bar
 
+
     def set_filename(self, filename):
         self.music_file = filename
     
+
     def print_notes(self):
         for i, track in enumerate(self.tracks):
             # print("Track {}: {}".format(i, track.name))
@@ -111,10 +120,7 @@ class MidiFile(mido.MidiFile):
                     except KeyError:
                         pass
 
-
-    def create_array(self):
-        pass
-
+    #return all posible notes in array
     def available_notes(self):
         nodes = {}
         for i, track in enumerate(self.tracks):
@@ -399,6 +405,7 @@ class MidiFile(mido.MidiFile):
         except:
             print('what')
         
+    # TODO: return simplified version(one voice) of many voiced song
     def simplify(self):
         pass
     
@@ -433,7 +440,7 @@ class MidiFile(mido.MidiFile):
         return fscale
 
 
-    
+   #create array from midi messages
     def as_array(self):
         in_one_deli = self.get_in_one_deli() 
         nodes = self.available_notes()
@@ -470,6 +477,7 @@ class MidiFile(mido.MidiFile):
         ar = ar[0][:stop_deli]
         return ar
 
+    #create midi messages from array
     def read_from_array(self, ar, avail):
         track = MidiTrack()
         self.tracks.append(track)
@@ -477,6 +485,8 @@ class MidiFile(mido.MidiFile):
         last_note = -1
         time = 0
         pause_time=0
+
+        #just system infrmation
         control = [10, 7, 101, 100, 6, 10, 7, 101, 100, 6, 10, 7]
         value = [64, 100, 0, 0, 12, 64, 100, 0, 0, 12, 64, 100]
         for i in range(len(control)):
@@ -498,6 +508,8 @@ class MidiFile(mido.MidiFile):
                 time += timestamp
         if pause_time==0:
             track.append(Message('note_off', note=last_note, velocity=100, time=time))
+
+        #just system information
         control=[101, 100, 6, 10, 7, 101, 100, 6, 10, 7, 101, 100, 6, 10, 7]
         value = [0, 0, 12, 64, 100, 0, 0, 12, 64, 100, 0, 0, 12, 64, 100]
         time = [192, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0]

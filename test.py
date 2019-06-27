@@ -1,5 +1,4 @@
 #%%
-
 import pygame 
 from midiutil import MIDIFile as mf
 import random as rd
@@ -16,7 +15,8 @@ print(mid.available_notes(), mid.last_note)
 #%%
 interval_size = {5: 1, 7: 1, 0: 1, 12: 0, 3: 2, 4: 2, 8: 2, 9: 2, 1: 3, 2: 3, 6: 4, 10: 3, 11: 3}
 
-
+#initial values
+num_epoch = 10
 popul_size = 10
 result = []
 #predeiined rhythm
@@ -111,7 +111,6 @@ near_bars = []
 for i in range(mid.get_num_bars()):
     print("{} {}".format(i, 'bar'))
     if not changed_bars[i]: 
-        num_epoch = 10
         #create st populaiton
         ref_bar = mid.get_bar(i)
         bar_size = len(ref_bar)
@@ -160,21 +159,6 @@ gmid = MF()
 gmid.read_from_array(avail=mid.available_notes(), ar=result)
 gmid.save("generated.mid")
 
-
-#functions
-
-#create bar
-     #evaluate fitness function
-        #roulette selection
-        #crossover and mutation
-
-
-#roulette selection
-# def selection(ar):
-#     for
-
-#fitness function
-
 #%%
 
 mid = MF()
@@ -187,9 +171,6 @@ track.append(Message('note_off', note=64, velocity=127, time=0))
 
 mid.refresh(None)
 print(mid.get_total_ticks())
-
-# mid = MF('ab.mid')
-# print(mid.get_total_ticks())
 
 # mid.play_music()
 #%%
