@@ -6,17 +6,9 @@ import random as rd
 from roll import MidiFile as MF
 from mido import Message, MidiTrack
 import numpy as np
-
 import mido
 from random import randint
 from static import scales, input_files
-
-#%%
-#checking opereleniye scale system
-mid = MF('in/Star Trek TNG kurz.mid')
-print(mid.get_scale())
-
-
 
 #%%
 mid = MF('midis\\garbadje.mid')
@@ -82,7 +74,7 @@ def interval_fitness_func(inx, bar):
     return a*mean + b*variance
 
 def mutate_bar(ar):
-    if rd.random() > 0.5:
+    if rd.random() > 0.8:
         # print(ar, 'before')
         notes = get_num_noted(ar)
         # print(notes, 'notes')
@@ -113,48 +105,54 @@ def has_no_artefacts(ar):
     for i in range(len(ar)):
         assert(ar[i] <= mid.last_note)
 
+changed_bars = [False for i in range(mid.get_num_bars())]
+near_bars = []
 # for i in range(1):
 for i in range(mid.get_num_bars()):
     print("{} {}".format(i, 'bar'))
-    num_epoch = 10
-    #create st populaiton
-    ref_bar = mid.get_bar(i)
-    bar_size = len(ref_bar)
-    population = [ref_bar for i in range(popul_size)]
-    for j in range(len(population)):
-        for k in range(len(population[j])):
-            if ref_bar[k] != mid.last_note and ref_bar[k] != 0:
-                population[j][k] = randint(1, mid.last_note-1)
-            else:
-                population[j][k] = ref_bar[k]
+    if not changed_bars[i]: 
+        num_epoch = 10
+        #create st populaiton
+        ref_bar = mid.get_bar(i)
+        bar_size = len(ref_bar)
+        population = [ref_bar for i in range(popul_size)]
+        for j in range(len(population)):
+            for k in range(len(population[j])):
+                if ref_bar[k] != mid.last_note and ref_bar[k] != 0:
+                    population[j][k] = randint(1, mid.last_note-1)
+                else:
+                    population[j][k] = ref_bar[k]
 
 
-    for j in range(num_epoch):
-       
+        for j in range(num_epoch):
+            a = [(k, fitness_func(i, population[k])) for k in range(len(population))]
+            a = sorted(a, key=lambda score: score[1])
+            # print("{}: {}, {}: ".format('epoch', j, 'score', a[0][0]))
+            new_popul = []
+            for k in range(len(a)//2):
+                new_popul.append(population[a[k][0]])
+            for k in range(len(a)//2):
+                new_popul.append(new_popul[randint(0, len(a)//2-1)])
+            
+            for k in range(len(new_popul)):
+                new_popul[k] = mutate_bar(new_popul[k])
+                has_no_artefacts(new_popul[k])
+
+            population = new_popul
+            #crossover and mutation
+        #save best bar
         a = [(k, fitness_func(i, population[k])) for k in range(len(population))]
-        a = sorted(a, key=lambda score: score[1])
-        # print("{}: {}, {}: ".format('epoch', j, 'score', a[0][0]))
-        new_popul = []
-        for k in range(len(a)//2):
-            new_popul.append(population[a[k][0]])
-        for k in range(len(a)//2):
-            new_popul.append(new_popul[randint(0, len(a)//2-1)])
-        
-        for k in range(len(new_popul)):
-            new_popul[k] = mutate_bar(new_popul[k])
-            has_no_artefacts(new_popul[k])
-
-        population = new_popul
-        #crossover and mutation
-    #save best bar
-    a = [(k, fitness_func(i, population[k])) for k in range(len(population))]
-    sorted(a, key=lambda score: a[1])
-    # result.append(population[a[0][0]])
-    assert(len(population[a[0][0]]) == len(ref_bar))
-    # print(population[a[0][0]], 'popul')
-    for i in range(len(population[a[0][0]])):
-        result.append(population[a[0][0]][i])
-
+        sorted(a, key=lambda score: a[1])
+        # result.append(population[a[0][0]])
+        assert(len(population[a[0][0]]) == len(ref_bar))
+        # print(population[a[0][0]], 'popul')
+        for i in range(len(population[a[0][0]])):
+            result.append(population[a[0][0]][i])
+        # near_bars.append(mid.bar_similarity(i))
+        changed_bars[i] = True
+    else:
+        for i in range(len(near_bars)):
+            result.append(near_bars[i])
 print(result)
 
 #save song
@@ -461,7 +459,7 @@ print(mid.get_total_ticks(), round((1000000/mid.get_tempo())*mid.length)*deli)
 
 #%%
 
-mid = MF('midis\\mozart.mid')
+mid = MF('midis\\Ocarina of Time.mid')
 genmid = MF()
 genmid.read_from_array(mid.as_array(), mid.available_notes())
 genmid.refresh()
