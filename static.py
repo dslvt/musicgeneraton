@@ -1,3 +1,5 @@
+c4=60
+name_notes = ['c', 'd-', 'd', 'e-', 'e', 'f', 'g-', 'g', 'a-', 'a', 'b-', 'b']
 scales = {'Adonai Malakh':                      '111101010110',
           'Aeolian Flat 1':                     '100110101101',
           'Algerian':                           '101101111001', 

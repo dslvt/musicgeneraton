@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 from matplotlib.colors import colorConverter
 import pygame
-from static import scales
+from static import scales, name_notes
 from mido import Message, MidiTrack
 
 
@@ -122,25 +122,45 @@ class MidiFile(mido.MidiFile):
 
     #return all posible notes in array
     def available_notes(self):
-        nodes = {}
-        for i, track in enumerate(self.tracks):
-            for msg in track:
-                msg = msg.dict()
-                if not isinstance(msg, mido.MetaMessage):
-                    try:
-                        if msg['note'] != 0:
-                            if nodes.get(msg["note"]) is None:
-                                nodes[msg["note"]] = 1
-                            else:
-                                nodes[msg["note"]] += 1
-                    except KeyError:
-                        pass
-        for key in nodes.keys():
-            nodes[key] //= 2
+        tonic_mid = 0
+        for msg in self.events[0]:
+            if msg.type == 'note_on':
+                tonic_mid = msg.note
+                break
+        tonic_mid = tonic_mid%12
+        scale = ['0' for i in range(12)]
+        for msg in self.events[0]:
+            if msg.type == 'note_on':
+                scale[msg.note%12] = '1'
+        scale = scale[tonic_mid:]+scale[:tonic_mid]
+        points = []
+        for scl in scales.values():
+            point = 0
+            for i in range(12):
+                if scl[i] == scale[i]:
+                    point+=1
+            points.append((scl, point))
+        points = sorted(points, key = lambda val: val[1], reverse=True)
+        scale = points[0][0]
+        # print(points[0])
 
-        keys = list(nodes.keys())
-        keys.sort()
-        return keys        
+        # for key, value in scales.items():
+        #     if value == points[0][0]:
+        #         print(name_notes[tonic_mid], key)
+        #         break
+
+        lowest_note, higtest_note = 1000, 0
+        for msg in self.events[0]:
+            if msg.type == 'note_on':
+                lowest_note = min(lowest_note, msg.note)
+                higtest_note = max(higtest_note, msg.note)
+        
+        ans = []
+        for i in range(lowest_note, higtest_note+1):
+            print(i, scale[i%12])
+            if scale[(i-tonic_mid)%12]=='1':
+                ans.append(i)
+        return ans
 
     def get_events(self):
         mid = self

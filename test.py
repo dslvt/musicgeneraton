@@ -10,6 +10,41 @@ from random import randint
 from static import scales, input_files
 
 #%%
+mid = MF('midis\\Amin.mid')
+mid.available_notes2()
+
+#%%
+mid = MF('midis\\Amin.mid')
+c4 = 60
+name_notes = ['c', 'd-', 'd', 'e-', 'e', 'f', 'g-', 'g', 'a-', 'a', 'b-', 'b']
+tonic_mid = 0
+for msg in mid.events[0]:
+    if msg.type == 'note_on':
+        tonic_mid = msg.note
+        break
+tonic_mid = tonic_mid%12
+scale = ['0' for i in range(12)]
+for msg in mid.events[0]:
+    if msg.type == 'note_on':
+        scale[msg.note%12] = '1'
+scale = scale[tonic_mid:]+scale[:tonic_mid]
+points = []
+for scl in scales.values():
+    point = 0
+    for i in range(12):
+        if scl[i] == scale[i]:
+            point+=1
+    points.append((scl, point))
+points = sorted(points, key = lambda val: val[1], reverse=True)
+print(points[0])
+
+scale_name = 'not defined'
+for key, value in scales.items():
+    if value == points[0][0]:
+        print(name_notes[tonic_mid], key)
+        break
+
+#%%
 mid = MF('midis\\garbadje.mid')
 print(mid.available_notes(), mid.last_note)
 #%%
