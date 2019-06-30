@@ -10,52 +10,14 @@ from random import randint
 from static import scales, input_files
 
 #%%
-mid = MF('midis\\Amin.mid')
-mid.available_notes2()
-
-#%%
-mid = MF('midis\\Amin.mid')
-c4 = 60
-name_notes = ['c', 'd-', 'd', 'e-', 'e', 'f', 'g-', 'g', 'a-', 'a', 'b-', 'b']
-tonic_mid = 0
-for msg in mid.events[0]:
-    if msg.type == 'note_on':
-        tonic_mid = msg.note
-        break
-tonic_mid = tonic_mid%12
-scale = ['0' for i in range(12)]
-for msg in mid.events[0]:
-    if msg.type == 'note_on':
-        scale[msg.note%12] = '1'
-scale = scale[tonic_mid:]+scale[:tonic_mid]
-points = []
-for scl in scales.values():
-    point = 0
-    for i in range(12):
-        if scl[i] == scale[i]:
-            point+=1
-    points.append((scl, point))
-points = sorted(points, key = lambda val: val[1], reverse=True)
-print(points[0])
-
-scale_name = 'not defined'
-for key, value in scales.items():
-    if value == points[0][0]:
-        print(name_notes[tonic_mid], key)
-        break
-
-#%%
-mid = MF('midis\\garbadje.mid')
-print(mid.available_notes(), mid.last_note)
-#%%
 interval_size = {5: 1, 7: 1, 0: 1, 12: 0, 3: 2, 4: 2, 8: 2, 9: 2, 1: 3, 2: 3, 6: 4, 10: 3, 11: 3}
 
 #initial values
-num_epoch = 10
-popul_size = 10
+num_epoch = 2
+popul_size = 2
 result = []
 #predeiined rhythm
-mid = MF('midis\\garbadje.mid')
+mid = MF('midis\\ramen king.mid')
 
 print(mid.get_bar(0))
 print(mid.last_note, 'last')
@@ -141,7 +103,7 @@ def has_no_artefacts(ar):
         assert(ar[i] <= mid.last_note)
 
 changed_bars = [False for i in range(mid.get_num_bars())]
-near_bars = []
+near_bars = [[] for i in range(mid.get_num_bars())]
 # for i in range(1):
 for i in range(mid.get_num_bars()):
     print("{} {}".format(i, 'bar'))
@@ -180,13 +142,26 @@ for i in range(mid.get_num_bars()):
         # result.append(population[a[0][0]])
         assert(len(population[a[0][0]]) == len(ref_bar))
         # print(population[a[0][0]], 'popul')
-        for i in range(len(population[a[0][0]])):
-            result.append(population[a[0][0]][i])
+        for j in range(len(population[a[0][0]])):
+            result.append(population[a[0][0]][j])
         # near_bars.append(mid.bar_similarity(i))
+        
         changed_bars[i] = True
+        near_coof, transpourisy = mid.bar_similarity(i)
+        print(near_coof)
+        for j in range(i+1, len(near_coof)):
+            if near_coof[j] > 0.9:
+                print('copy bar', i, j)
+                changed_bars[j] = True
+                for k in range(len(population[a[0][0]])):
+                    if population[a[0][0]][k] != mid.last_note:
+                        near_bars[j].append(population[a[0][0]][k]-transpourisy[j])
+                    else:
+                        near_bars[j].append(population[a[0][0]][k])
     else:
-        for i in range(len(near_bars)):
-            result.append(near_bars[i])
+        print('change bar', i)
+        for j in range(len(near_bars[i])):
+            result.append(near_bars[i][j])
 print(result)
 
 #save song

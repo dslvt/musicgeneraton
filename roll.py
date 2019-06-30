@@ -40,6 +40,13 @@ class MidiFile(mido.MidiFile):
     def get_num_bars(self):
         return round(250000/self.get_tempo()*self.length)
 
+    def get_tonic(self):
+        tonic_mid = 0
+        for msg in self.events[0]:
+            if msg.type == 'note_on':
+                tonic_mid = msg.note
+                break
+        return tonic_mid
 
     #return how many ticks in one smallest posible note
     def get_in_one_deli(self):
@@ -61,8 +68,9 @@ class MidiFile(mido.MidiFile):
         for i in range(self.get_num_bars()):
             cof1, cof2 = 0, 0
             init_bar = self.get_bar(i)
-            bar1 = self.normalize_bar(init_bar)
-            bar2 = self.transpose_bar(self.normalize_bar(init_bar), bar[0]-init_bar[0])
+            bar1 = self.normalize_bar(init_bar.copy())
+            transpose_val = bar[0]-init_bar[0]
+            bar2 = self.transpose_bar(self.normalize_bar(init_bar.copy()), transpose_val)
             for j in range(len(bar1)):
                 if bar[j] == bar1[j]:
                     cof1+=1
@@ -70,9 +78,10 @@ class MidiFile(mido.MidiFile):
                     cof2+=1
             if cof1>=cof2:
                 transp.append(0)
+                p.append(cof1/len(bar))
             else:
-                transp.append(bar[0]-init_bar[0])
-            p.append(max(cof1/len(bar), cof2/len(bar)))
+                transp.append(transpose_val)
+                p.append(cof2/len(bar))
         return p, transp
 
 
@@ -84,11 +93,9 @@ class MidiFile(mido.MidiFile):
         last = -1
         prod = self.last_note
         for i in range(len(bar)):
-            if bar[i] == 0:
-                pass
-            elif bar[i] != prod:
+            if bar[i] != prod:
                 last = bar[i]
-            else:
+            elif bar[i] != 0:
                 bar[i] = last
         return bar
     
@@ -122,11 +129,8 @@ class MidiFile(mido.MidiFile):
 
     #return all posible notes in array
     def available_notes(self):
-        tonic_mid = 0
-        for msg in self.events[0]:
-            if msg.type == 'note_on':
-                tonic_mid = msg.note
-                break
+        tonic_mid = self.get_tonic() 
+        
         tonic_mid = tonic_mid%12
         scale = ['0' for i in range(12)]
         for msg in self.events[0]:
@@ -157,7 +161,7 @@ class MidiFile(mido.MidiFile):
         
         ans = []
         for i in range(lowest_note, higtest_note+1):
-            print(i, scale[i%12])
+            # print(i, scale[i%12])
             if scale[(i-tonic_mid)%12]=='1':
                 ans.append(i)
         return ans
