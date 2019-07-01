@@ -161,7 +161,7 @@ input_files = {
     "in/pipi-langstrumpf.mid": "C major", "in/Petteri.mid": "C major",
     "in/superman.mid": "G major", "in/StheB.mid": "G major", "in/Sternenhimmel.mid": "G major",
     "in/starwars-imperial.mid": "D minor", "in/starwars.mid": "C minor",
-    "in/99 Luftballons.mid": "D minor", "in/90210.mid": "F major", "in/Zorbas.mid": "D major",
+    "in/99 Luftballons.mid": "A minor", "in/90210.mid": "F major", "in/Zorbas.mid": "D major",
     "in/ZieGindsKomtDeStoomboot.mid": "F major",
     "in/you R not alone.mid": "D minor",
     "in/X Files.mid": "E minor", "in/winnerabba.mid": "B major", "in/WalkOfLife.mid": "A major",

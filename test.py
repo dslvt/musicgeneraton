@@ -5,9 +5,27 @@ import random as rd
 from roll import MidiFile as MF
 from mido import Message, MidiTrack
 import numpy as np
+
 import mido
 from random import randint
-from static import scales, input_files
+from static import scales, input_files, name_notes
+
+#%%
+def get_scale_from_name_c(name):
+    scales = {'minor': '101101011010',
+              'major': '101011010101'}
+    name = name.split(' ')
+    tonic_name, scale_name = str.lower(name[0]), str.lower(name[1])
+    tonic = name_notes.index(tonic_name)
+    scale = scales[scale_name]
+    return scale[12-tonic:]+scale[0:12-tonic]
+
+print(get_scale_from_name_c('C major'))
+        
+#%%
+mid = MF('in\\99 Luftballons.mid')
+# print(mid.get_scale2())
+
 
 #%%
 mid = MF('in\\o_la_paloma.mid')
@@ -15,8 +33,10 @@ print(str.lower(mid.get_scale())==str.lower('G major'))
 count = 0
 for name, scale in input_files.items():
     mid = MF('in\\'+name[3:])
-    if str.lower(scale)==str.lower(mid.get_scale()):
+    if get_scale_from_name_c(scale)==mid.get_scale2():
         count+=1
+    else:
+        print(get_scale_from_name_c(scale), mid.get_scale2(), name)
 print(count, count/(len(input_files.items())))
 
 #%%

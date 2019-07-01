@@ -455,9 +455,34 @@ class MidiFile(mido.MidiFile):
                 scale_name = key
                 break
         # print(scale_name)
-
         
         return ''.join([name_notes[tonic_mid%12], ' ', scale_name])
+
+    def get_scale2(self):
+        scales = {'minor': '101101011010',
+                  'major': '101011010101'}
+        
+        field = ['0' for i in range(128)]
+        points = {name : [0 for i in range(128)] for name in scales.keys()}
+        for msg in self.events[0]:
+            if msg.type == 'note_on':
+                field[msg.note] = '1'
+        
+        max_score = 0
+        max_sc, max_tonic = '', ''
+        for sc, mask in scales.items():
+            for i in range(len(field)-len(mask)):
+                score = 0
+                for j in range(len(mask)):
+                    if field[i+j] == scales[sc][j]:
+                        score += 1
+                points[sc][i] = score
+                if max_score < score:
+                    max_score = score
+                    max_sc = sc
+                    max_tonic = i%12
+        return scales[max_sc][12-max_tonic:]+scales[max_sc][0:12-max_tonic]
+
 
    #create array from midi messages
     def as_array(self):
