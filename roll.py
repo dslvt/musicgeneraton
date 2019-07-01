@@ -23,6 +23,10 @@ class MidiFile(mido.MidiFile):
         self.meta = {}
         self.events = self.get_events()
         self.music_file = filename
+        for i, event in enumerate(self.events):
+            if i != 0 and event != []:
+                self.events[0] = event.copy()
+                break
         self.deli = 8
         self.last_note = len(self.available_notes())+1
         self.meta = {'time_signature': {'type': 'time_signature',
@@ -146,13 +150,6 @@ class MidiFile(mido.MidiFile):
             points.append((scl, point))
         points = sorted(points, key = lambda val: val[1], reverse=True)
         scale = points[0][0]
-        # print(points[0])
-
-        # for key, value in scales.items():
-        #     if value == points[0][0]:
-        #         print(name_notes[tonic_mid], key)
-        #         break
-
         lowest_note, higtest_note = 1000, 0
         for msg in self.events[0]:
             if msg.type == 'note_on':
@@ -161,7 +158,6 @@ class MidiFile(mido.MidiFile):
         
         ans = []
         for i in range(lowest_note, higtest_note+1):
-            # print(i, scale[i%12])
             if scale[(i-tonic_mid)%12]=='1':
                 ans.append(i)
         return ans
@@ -434,35 +430,34 @@ class MidiFile(mido.MidiFile):
         pass
     
     def get_scale(self):
-        c4 = 60
-        notes = ['c', 'd-', 'd', 'e-', 'e', 'f', 'g-','g', 'a-', 'a', 'b-', 'b']
+        tonic_mid = self.get_tonic()
+        tonic_mid = tonic_mid%12
 
-        fscale = 'not defined'
-        keys = self.as_array()
-        pattern = ['0' for i in range(12)]
-        tonic = 0
-        for i in range(len(keys)):
-            if keys[i] != 0 and keys[i] != self.last_note:
-                tonic = keys[i]-1
-                print(tonic)
-                fscale = notes[abs(120*tonic-c4)%12]
+        scale = ['0' for i in range(12)]
+        for msg in self.events[0]:
+            if msg.type == 'note_on':
+                scale[msg.note%12] = '1'
+        scale = scale[tonic_mid:]+scale[:tonic_mid]
+        points = []
+        for scl in scales.values():
+            point = 0
+            for i in range(12):
+                if scl[i] == scale[i]:
+                    point+=1
+            points.append((scl, point))
+        points = sorted(points, key = lambda val: val[1], reverse=True)
+        scale = points[0][0]
+        # print(tonic_mid, scale)
+        # print(name_notes[tonic_mid%12])
+        scale_name = ''
+        for key, value in scales.items():
+            if scale == value:
+                scale_name = key
                 break
+        # print(scale_name)
 
-        for i in range(len(keys)):
-            if keys[i] != 0 and keys[i] != self.last_note:
-                if keys[i] < tonic:
-                    pattern[12 - (tonic-keys[i]+1)%12] = '1'
-                else:
-                    pattern[(keys[i]-tonic-1)%12] = '1'
-        print(pattern)
-        pattern = ''.join(pattern)
-        for scale in scales.keys():
-            if pattern == scale:
-                fscale += ''.join([' ', scales[scale]])
-
-
-        return fscale
-
+        
+        return ''.join([name_notes[tonic_mid%12], ' ', scale_name])
 
    #create array from midi messages
     def as_array(self):
@@ -498,6 +493,7 @@ class MidiFile(mido.MidiFile):
             if ar[0][i] == -1:
                 stop_deli = i
                 break
+        print(ar)
         ar = ar[0][:stop_deli]
         return ar
 

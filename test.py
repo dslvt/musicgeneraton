@@ -10,14 +10,24 @@ from random import randint
 from static import scales, input_files
 
 #%%
+mid = MF('in\\o_la_paloma.mid')
+print(str.lower(mid.get_scale())==str.lower('G major'))
+count = 0
+for name, scale in input_files.items():
+    mid = MF('in\\'+name[3:])
+    if str.lower(scale)==str.lower(mid.get_scale()):
+        count+=1
+print(count, count/(len(input_files.items())))
+
+#%%
 interval_size = {5: 1, 7: 1, 0: 1, 12: 0, 3: 2, 4: 2, 8: 2, 9: 2, 1: 3, 2: 3, 6: 4, 10: 3, 11: 3}
 
 #initial values
-num_epoch = 2
-popul_size = 2
+num_epoch = 20
+popul_size = 5
 result = []
 #predeiined rhythm
-mid = MF('midis\\ramen king.mid')
+mid = MF('midis\\mozart.mid')
 
 print(mid.get_bar(0))
 print(mid.last_note, 'last')
@@ -64,9 +74,12 @@ def interval_fitness_func(inx, bar):
     bar_var = var_of_bar(bar) 
 
     for i in range(inx, mid.get_num_bars()):
-        mean+=(1/(i+1))*(abs(bar_mean-mean_of_bar(mid.get_bar(i))))
+        try:
+            mean+=(1/(i+1))*(abs(bar_mean-mean_of_bar(mid.get_bar(i))))
 
-        variance += (1/(i+1))*(abs(bar_var-var_of_bar(mid.get_bar(i))))
+            variance += (1/(i+1))*(abs(bar_var-var_of_bar(mid.get_bar(i))))
+        except ZeroDivisionError:
+            print("check interval fitness")
 
     return a*mean + b*variance
 
