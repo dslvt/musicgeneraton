@@ -9,6 +9,7 @@ from mido import Message, MidiTrack
 
 
 
+
 # inherit the origin mido class
 class MidiFile(mido.MidiFile):
 
@@ -75,7 +76,7 @@ class MidiFile(mido.MidiFile):
             bar1 = self.normalize_bar(init_bar.copy())
             transpose_val = bar[0]-init_bar[0]
             bar2 = self.transpose_bar(self.normalize_bar(init_bar.copy()), transpose_val)
-            for j in range(len(bar1)):
+            for j in range(min(min(len(bar1), len(bar)), len(bar2))):
                 if bar[j] == bar1[j]:
                     cof1+=1
                 if bar[j] == bar2[j]:
@@ -518,7 +519,6 @@ class MidiFile(mido.MidiFile):
             if ar[0][i] == -1:
                 stop_deli = i
                 break
-        print(ar)
         ar = ar[0][:stop_deli]
         return ar
 

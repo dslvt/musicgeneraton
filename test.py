@@ -5,49 +5,26 @@ import random as rd
 from roll import MidiFile as MF
 from mido import Message, MidiTrack
 import numpy as np
-
 import mido
 from random import randint
 from static import scales, input_files, name_notes
-
-#%%
-def get_scale_from_name_c(name):
-    scales = {'minor': '101101011010',
-              'major': '101011010101'}
-    name = name.split(' ')
-    tonic_name, scale_name = str.lower(name[0]), str.lower(name[1])
-    tonic = name_notes.index(tonic_name)
-    scale = scales[scale_name]
-    return scale[12-tonic:]+scale[0:12-tonic]
-
-print(get_scale_from_name_c('C major'))
-        
-#%%
-mid = MF('in\\99 Luftballons.mid')
-# print(mid.get_scale2())
+from sklearn.linear_model import LinearRegression
+import datetime 
 
 
 #%%
-mid = MF('in\\o_la_paloma.mid')
-print(str.lower(mid.get_scale())==str.lower('G major'))
-count = 0
-for name, scale in input_files.items():
-    mid = MF('in\\'+name[3:])
-    if get_scale_from_name_c(scale)==mid.get_scale2():
-        count+=1
-    else:
-        print(get_scale_from_name_c(scale), mid.get_scale2(), name)
-print(count, count/(len(input_files.items())))
 
 #%%
 interval_size = {5: 1, 7: 1, 0: 1, 12: 0, 3: 2, 4: 2, 8: 2, 9: 2, 1: 3, 2: 3, 6: 4, 10: 3, 11: 3}
 
 #initial values
 num_epoch = 20
-popul_size = 5
+popul_size = 5 
 result = []
+generated_folder = 'generated'
 #predeiined rhythm
-mid = MF('midis\\mozart.mid')
+file_name = 'ramen king.mid'
+mid = MF('midis\\' + file_name)
 
 print(mid.get_bar(0))
 print(mid.last_note, 'last')
@@ -61,12 +38,31 @@ def get_num_noted(ar):
 
 
 def fitness_func(bar_inx, bar):
-    funcs = [interval_fitness_func]
-    argums = [1]
+    funcs = [interval_fitness_func, melodic_mov_func]
+    argums = [1, 1, 1]
     total_score = 0
     for itr, func in enumerate(funcs):
         total_score += argums[itr]*func(bar_inx, bar)
     return total_score
+
+
+def melodic_mov_func(bar_inx, bar):
+    x, y = [], []
+    pos=1
+    for i in range(len(bar)):
+        if bar[i] != mid.last_note:
+            y.append(bar[i])
+            x.append(pos)
+            pos+=1
+    x = np.array(x).reshape((-1, 1))
+    y = np.array(y)
+    model = LinearRegression().fit(x, y)
+    result = abs(1 - model.score(x, y))*10
+    if isinstance(result, type(None)):
+        return 1
+    return result
+    
+    
 
 def mean_of_bar(ar):
     notes = get_num_noted(ar)
@@ -198,9 +194,24 @@ for i in range(mid.get_num_bars()):
 print(result)
 
 #save song
+
+now = datetime.datetime.now()
+time = '-'.join([str(now.month), str(now.day), str(now.hour), str(now.minute)])
 gmid = MF()
 gmid.read_from_array(avail=mid.available_notes(), ar=result)
-gmid.save("generated.mid")
+gmid.save("{}\\{}-{}{}".format(generated_folder, file_name, time, '_gen.mid'))
+#%%
+mid = MF('in\\o_la_paloma.mid')
+print(str.lower(mid.get_scale())==str.lower('G major'))
+count = 0
+for name, scale in input_files.items():
+    mid = MF('in\\'+name[3:])
+    if get_scale_from_name_c(scale)==mid.get_scale2():
+        count+=1
+    else:
+        print(get_scale_from_name_c(scale), mid.get_scale2(), name)
+print(count, count/(len(input_files.items())))
+
 
 #%%
 
@@ -216,6 +227,18 @@ mid.refresh(None)
 print(mid.get_total_ticks())
 
 # mid.play_music()
+#%%
+def get_scale_from_name_c(name):
+    scales = {'minor': '101101011010',
+              'major': '101011010101'}
+    name = name.split(' ')
+    tonic_name, scale_name = str.lower(name[0]), str.lower(name[1])
+    tonic = name_notes.index(tonic_name)
+    scale = scales[scale_name]
+    return scale[12-tonic:]+scale[0:12-tonic]
+
+print(get_scale_from_name_c('C major'))
+  
 #%%
 ar = [6, 7, 7, 7, 7, 7, 7, 7, 4, 7, 7, 7, 7, 7, 7, 7, 1, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7]
 avail = [72, 75, 77, 78, 79, 82]
